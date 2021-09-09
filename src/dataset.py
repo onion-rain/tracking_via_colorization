@@ -20,17 +20,16 @@ logger = logging.getLogger("Dataloader")
 
 
 class BaseDataset(Dataset):
-    def __init__(self,transforms=None):
+    def __init__(self, transforms=None):
         self.transforms = transforms
 
-    def get_transformed_data(self,data):
-        if isinstance(self.transforms,list):
+    def get_transformed_data(self, data):
+        if isinstance(self.transforms, list):
             transformed_data = []
             for transform in self.transforms:
                 transformed_data.append(transform(data))
         else:
             transformed_data = self.transforms(data)
-
         return transformed_data
 
 
@@ -50,7 +49,7 @@ class YoutubeDataset(BaseDataset):
         self.skip_initial = skip_initial
         self.out_fps = fps
         self.shuffle = shuffle
-#         self.categories = f"*[{','.join(categories)}]"  if categories else "*"
+        # self.categories = f"*[{','.join(categories)}]"  if categories else "*"
         self.categories = categories if categories else ["*"]
         video_paths = []
         self.video_paths =  []
@@ -160,10 +159,10 @@ class YoutubeDataset(BaseDataset):
         video_container = cv2.VideoCapture(path)
         video_fps = int(video_container.get(cv2.CAP_PROP_FPS))
 
-#         offset = int(self.skip_initial / video_stream.time_base / video_fps)
-#         logger.debug("offset {offset}")
-#         video_container.seek(offset, any_frame=True, stream=video_stream)
-#         video_container.set(cv2.CAP_PROP_POS_FRAMES,self.skip_initial)
+        # offset = int(self.skip_initial / video_stream.time_base / video_fps)
+        # logger.debug("offset {offset}")
+        # video_container.seek(offset, any_frame=True, stream=video_stream)
+        # video_container.set(cv2.CAP_PROP_POS_FRAMES,self.skip_initial)
         ok = video_container.isOpened()
         if ok:
             logger.debug("video opened successfully")
@@ -233,47 +232,100 @@ class DavisDataset(BaseDataset):
         self.transforms = transforms
         self.video_paths = glob.glob(os.path.join(self.basepath, "*"))
 
-#     def __len__(self):
-#         if self.max_batchs:
-#             l = self.max_batchs
-#         else:
-#             images = glob.glob(os.path.join(self.basepath, "*", "*"))
-#             l = (len(images) // self.batch)
+    # def __len__(self):
+    #     if self.max_batchs:
+    #         l = self.max_batchs
+    #     else:
+    #         images = glob.glob(os.path.join(self.basepath, "*", "*"))
+    #         l = (len(images) // self.batch)
 
-#         return l
+    #     return l
 
     def _read_images(self, path, batch):
         _samples = []
         _count_samples = 0
-        images_path = glob.glob(os.path.join(path, "*"))
-        images_path = sorted(images_path,key=lambda x: int(os.path.basename(x).split(".")[0]))
-        logger.debug(f"images found : {len(images_path)}")
-        for image_path in images_path:
+        if path.endswith(".mp4"):
+            video_cap = cv2.VideoCapture(path)
+            fps = int(video_cap.get(cv2.CAP_PROP_FPS))
+            frames = fps*10
+            # from src.utils import video_cut
+            # _samples = video_cut(video_cap, "", stride=int(frames/self.batch_per_video))
+            logger.debug(f"images about : {frames}")
+            
+            # images_path = glob.glob(os.path.join(path, "*"))
+            # images_path = sorted(images_path,key=lambda x: int(os.path.basename(x).split(".")[0].split("_")[-2]+os.path.basename(x).split(".")[0].split("_")[-1]))
+            # logger.debug(f"images found : {len(images_path)}")
+            # for image_path in images_path:
+            i = 1
+            stride = 8
+            while True:
+                success, img = video_cap.read()
+                if success is False:
+                    # print('video cut done')
+                    video_cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                    break
+                    # break
+                if i % stride == 0:
+                    # break when reach size (`batchs_per_video`) for a particular video sequence
+                    if self.batch_per_video \
+                        and self.batch_per_video == _count_samples \
+                        or self.max_batchs \
+                        and self.max_batchs == self.count_total_batch:
+                        break
 
-            # break when reach size (`batchs_per_video`) for a particular video sequence
-            if self.batch_per_video and self.batch_per_video == _count_samples or self.max_batchs and self.max_batchs == self.count_total_batch:
-                break
+                    rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                    self.count_images += 1
+                    _samples.append(rgb_img)
+                    
+                    if len(_samples) == self.num_samples:
+                        batch.extend(_samples)
+                        _samples = []
+                        _count_samples += 1
 
-            img = Image.open(image_path)
-#             print(image_path)
-            self.count_images += 1
+                    if len(batch) == self.batch:
+                        self.count_total_batch += 1
+                        logger.debug(f"batch size {len(batch)}")
+                        logger.debug(f"count batches {self.count_total_batch}")
+                        logger.debug(f"count images {self.count_images}")
+                        batch = np.array(batch)
+                        if self.transforms:
+                            batch = self.get_transformed_data(batch)
+                        yield batch
+                        batch = []
 
-            _samples.append(img)
+                i += 1
+        else:
+            images_path = glob.glob(os.path.join(path, "*"))
+            images_path = sorted(images_path,key=lambda x: int(os.path.basename(x).split(".")[0]))
+            logger.debug(f"images found : {len(images_path)}")
+            for image_path in images_path:
 
-            if len(_samples) == self.num_samples:
-                batch.extend(_samples)
-                _samples = []
-                _count_samples += 1
+                # break when reach size (`batchs_per_video`) for a particular video sequence
+                if self.batch_per_video and self.batch_per_video == _count_samples or self.max_batchs and self.max_batchs == self.count_total_batch:
+                    break
 
-            if len(batch) == self.batch:
-                self.count_total_batch += 1
-                logger.debug(f"batch size {len(batch)}")
-                logger.debug(f"count batches {self.count_total_batch}")
-                logger.debug(f"count images {self.count_images}")
-                if self.transforms:
-                    batch = self.get_transformed_data(batch)
-                yield batch
-                batch = []
+                # img = Image.open(image_path)
+                img = cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2RGB)
+                # print(image_path)
+                self.count_images += 1
+
+                _samples.append(img)
+
+                if len(_samples) == self.num_samples:
+                    batch.extend(_samples)
+                    _samples = []
+                    _count_samples += 1
+
+                if len(batch) == self.batch:
+                    self.count_total_batch += 1
+                    logger.debug(f"batch size {len(batch)}")
+                    logger.debug(f"count batches {self.count_total_batch}")
+                    logger.debug(f"count images {self.count_images}")
+                    batch = np.array(batch)
+                    if self.transforms:
+                        batch = self.get_transformed_data(batch)
+                    yield batch
+                    batch = []
 
         # if batch not upto size return None
         return None
