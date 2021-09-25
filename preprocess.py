@@ -34,18 +34,20 @@ def video_cut(video_cap, root, stride=24):
                 cv2.imwrite(name, img)
         i += 1
 
-BaseRoot = Config.KMeansData.DATA_ROOT
-video_paths = glob.glob(os.path.join(BaseRoot, "*"))
+# BaseRoot = Config.KMeansData.DATA_ROOT
+BaseRoot = Config.TrainData.DATA_ROOT
+BaseRoot = os.path.join(*BaseRoot.split(os.sep)[:-2])
+video_paths = glob.glob(os.path.join(BaseRoot, "*.mp4"))
 for path in tqdm(video_paths):
     try:
         video_cap = cv2.VideoCapture(path)
         SaveRoot = BaseRoot+os.sep+"slices"+os.sep+path.split(os.sep)[-1].split(".")[0]+os.sep
         check_and_clear(SaveRoot)
-        video_cut(video_cap, SaveRoot, 200)
+        video_cut(video_cap, SaveRoot, 10)
         # video_cut(video_cap, "", 200)
     except Exception:
         print(path)
 
 
-'./dataset/tracking/davis/training/abseiling/ZgDAZ61fhg0_000091_000101.mp4'
-'./dataset/tracking/davis/training/abseiling/slices'
+# './dataset/tracking/davis/training/abseiling/ZgDAZ61fhg0_000091_000101.mp4'
+# './dataset/tracking/davis/training/abseiling/slices'

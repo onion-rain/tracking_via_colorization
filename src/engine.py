@@ -148,7 +148,7 @@ class TrainEngine(Engine):
             raise Exception(f"Error in getting kmeans clustering {config.KMEANS_FILE}")
 
         # dataset
-#         transforms = self.get_transforms(self.kmeans)
+        # transforms = self.get_transforms(self.kmeans)
         transforms = None
         if not os.path.isdir(config.TrainData.DATA_ROOT):
             raise NotADirectoryError(f"data directory {config.TrainData.DATA_ROOT} does not exist")

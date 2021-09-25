@@ -54,6 +54,8 @@ class ConvertChannel:
         assert self.in_channel in channels, f"Channel must be in {channels}"
 
     def __call__(self, sample):
+        rgb_sample = [np.asarray(image) for image in sample]
+        sample = np.array(rgb_sample)
         logger.debug(sample.shape)
         if sample.ndim == 4:
             output_samples = []

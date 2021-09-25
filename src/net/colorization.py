@@ -90,7 +90,7 @@ class Network3D(nn.Module):
     def _make_layer(self, padding, dilation):
         return self.block(padding, dilation)
 
-    def forward(self, input):
+    def forward(self, input): 
         features = input.unsqueeze(2)
         out = self.block1(features)
         self._logger.debug(f"shape after block1 {out.shape}")
@@ -135,16 +135,16 @@ class Colorization(nn.Module):
         start = 0
 
         for i in range(num_samples):
-            start += 1
-            end += 1
             if end == 0:
                 stacking.append(embeddings[start:, :, :, :])
             else:
                 stacking.append(embeddings[start:end, :, :, :])
+            start += 1
+            end += 1
 
-                # embeddings = torch.stack([embeddings[:-2,:,:,:],embeddings[1:-1,:,:,:],embeddings[2:,:,:,:]])
-        embeddings = torch.stack(stacking,dim=1)
-        embeddings = embeddings.reshape(-1,num_samples,channels,h*w )
+        # embeddings = torch.stack([embeddings[:-2,:,:,:],embeddings[1:-1,:,:,:],embeddings[2:,:,:,:]])
+        embeddings = torch.stack(stacking, dim=1)
+        embeddings = embeddings.reshape(-1, num_samples, channels, h*w )
         self._logger.debug(f"Embedding shape {embeddings.shape}")
 
         refs = embeddings[:, :num_ref, :, :]
@@ -175,14 +175,14 @@ class Colorization(nn.Module):
         end = (num_samples // 2 + 1) * -1
         start = 0
         for i in range(num_samples):
-            start += 1
-            end += 1
             if end == 0:
                 stacking.append(labels[start:, :, :, :])
             else:
                 stacking.append(labels[start:end, :, :, :])
+            start += 1
+            end += 1
 
-        labels = torch.stack(stacking,dim=1)
+        labels = torch.stack(stacking, dim=1)
         labels = labels.reshape(-1, num_samples, num_classes, h * w)
 
         ref_labels = labels[:, :num_ref, :, :].float()

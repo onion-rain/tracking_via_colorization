@@ -304,8 +304,8 @@ class DavisDataset(BaseDataset):
                 if self.batch_per_video and self.batch_per_video == _count_samples or self.max_batchs and self.max_batchs == self.count_total_batch:
                     break
 
-                # img = Image.open(image_path)
-                img = cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2RGB)
+                img = Image.open(image_path)
+                # img = cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2RGB)
                 # print(image_path)
                 self.count_images += 1
 
@@ -319,9 +319,9 @@ class DavisDataset(BaseDataset):
                 if len(batch) == self.batch:
                     self.count_total_batch += 1
                     logger.debug(f"batch size {len(batch)}")
-                    logger.debug(f"count batches {self.count_total_batch}")
-                    logger.debug(f"count images {self.count_images}")
-                    batch = np.array(batch)
+                    logger.debug(f"count_total_batch {self.count_total_batch}")
+                    logger.debug(f"count_images {self.count_images}")
+                    # batch = np.array(batch)
                     if self.transforms:
                         batch = self.get_transformed_data(batch)
                     yield batch

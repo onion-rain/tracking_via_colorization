@@ -43,7 +43,7 @@ class Config:
         BASE_DATA_ROOT = "./dataset/tracking/"
         CATEGORIES = None
         DATASET = "davis"
-        DATA_ROOT = os.path.join(BASE_DATA_ROOT, DATASET, "training/abseiling/")
+        DATA_ROOT = os.path.join(BASE_DATA_ROOT, DATASET, "training/acting in play/slices/")
         BATCH_SIZE = 32 # 32 x 4
         SHUFFLE = True
         BATCH_PER_VIDEO = 5
@@ -57,7 +57,7 @@ class Config:
         BASE_DATA_ROOT = "./dataset/tracking/"
         DATASET = "davis"
         CATEGORIES = None
-        DATA_ROOT = os.path.join(BASE_DATA_ROOT, DATASET, "test_2019/JPEGImages/480p")
+        DATA_ROOT = os.path.join(BASE_DATA_ROOT, DATASET, "training/acting in play/slices/")
         BATCH_SIZE = 32
         SHUFFLE = False
         BATCH_PER_VIDEO = 1
@@ -71,7 +71,7 @@ class Config:
         BASE_DATA_ROOT = "./dataset/tracking/"
         DATASET = "davis"
         CATEGORIES = None
-        DATA_ROOT = os.path.join(BASE_DATA_ROOT, DATASET, "training/acting in play/slices/")
+        DATA_ROOT = os.path.join(BASE_DATA_ROOT, DATASET, "training/abseiling/slices/")
         BATCH_SIZE = 1
         SHUFFLE = False
         BATCH_PER_VIDEO = 1
@@ -86,7 +86,7 @@ class Config:
     CHANNELS = 'lab'
     QUANTIZE_CHANNELS = (1,2)
     KMEANS_SAMPLES = 100000
-    KMEANS_REFIT = True
+    KMEANS_REFIT = False
 
     # LOGGING
     LOG_ROOT = "./logs"
