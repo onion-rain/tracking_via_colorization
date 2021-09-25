@@ -300,7 +300,6 @@ class TrainEngine(Engine):
                                                      caption=f"predicted image {batch_index}")])
                         logs["training visualization"] = examples
 
-
                     visual_count += 1
             data_loader.total = batch_index
             print(f"epoch {epoch}, loss: {epoch_loss / (batch_index + 1)}")

@@ -93,7 +93,7 @@ class Config:
     LOG_FILE = "run.log"
     LOGGER = logging.getLogger(f"{PROJECT_NAME}_{EXPERIMENT_NAME}")
 
-    WANDB = False
+    WANDB = True
     WANDB_LOG_ROOT = "./logs/model"
     __WANDB_KEY = os.getenv("WANDB_KEY")
 
